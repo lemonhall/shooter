@@ -18,6 +18,11 @@
 var scene, camera, renderer;
 var geometry, material, mesh;
 var shots = [];
+//Create an AudioListener and add it to the camera
+//https://threejs.org/docs/#Reference/Audio/AudioListener
+var listener = new THREE.AudioListener();
+// create a global audio source
+var sound = new THREE.Audio( listener );
 
 function Gamepads(){
 	var gamepads = {};
@@ -29,8 +34,12 @@ Gamepads.prototype.poll = function(){
 
 var gamepads = new Gamepads();
 
+
+var enemy;
+
 init();
 animate();
+
 
 function init() {
 
@@ -38,11 +47,30 @@ function init() {
 
 	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
 	camera.position.z = 1000;
+	camera.add( listener );
+
+	var audioLoader = new THREE.AudioLoader();
+	//Load a sound and set it as the Audio object's buffer
+	audioLoader.load('sounds/laser_shot.wav', function( buffer ) {
+		sound.setBuffer( buffer );
+		//sound.setLoop(true);
+		sound.setVolume(0.5);
+		//sound.play();
+	});
+
 
 	geometry = new THREE.BoxGeometry( 200, 200, 200 );
 	material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
-
 	mesh = new THREE.Mesh( geometry, material );
+
+	enemy = new THREE.Mesh( 
+							new THREE.BoxGeometry( 200, 200, 200 ), 
+							new THREE.MeshBasicMaterial( { color: 0xfff000, wireframe: true } ) 
+						  );
+	enemy.position.z = -4000;
+	enemy.position.x = -1000;
+
+	scene.add( enemy );
 	scene.add( mesh );
 
 	renderer = new THREE.WebGLRenderer();
@@ -57,10 +85,18 @@ function init() {
 function animate() {
 
 	requestAnimationFrame( animate );
-	gamepads.poll();
 
+	//控制自己机体的运动
+	gamepads.poll();
 	mesh.position.x += 20*gamepads.gamepads[0].axes[0];
 	mesh.position.y -= 16*gamepads.gamepads[0].axes[1];
+
+	enemy.position.z += 10;
+	enemy.position.x = enemy.position.x - (enemy.position.x - mesh.position.x)/20; 
+	enemy.position.y = enemy.position.y - (enemy.position.y - mesh.position.y)/20; 
+
+	//控制所有子弹的画面效果，超过视界之后需要移除掉对象
+	//shots数组里的东西还没有移除，TODO
 	shots.forEach(function(shot){
 		//console.log(shots);
 		//每帧里都让子弹向前移动
@@ -70,6 +106,8 @@ function animate() {
 			scene.remove(shot);
 		}
 	});
+
+	//判断控制器是否有扣扳机的过程
 	//mesh.position.z -= 40*gamepads.gamepads[0].axes[6];
 	//console.log(gamepads.gamepads[0].buttons[0].pressed==true);
 	if(gamepads.gamepads[0].buttons[0].pressed==true){
@@ -82,9 +120,10 @@ function animate() {
 		//console.log(shots);
 		shots.push(shot_mesh);
 		scene.add(shot_mesh);
+		sound.play();
 	}
 
-
+	//渲染
 	renderer.render( scene, camera );
 }
 
