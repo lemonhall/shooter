@@ -33,10 +33,18 @@ const InputManager = {
 	
 	// 鼠标事件
 	setupMouseEvents: function() {
+		const crosshair = document.getElementById('crosshair');
+		
 		window.addEventListener('mousemove', (event) => {
 			// 归一化鼠标坐标 (-1 到 +1)
 			this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 			this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+			
+			// 更新准星位置（跟随鼠标）
+			if (crosshair) {
+				crosshair.style.left = event.clientX + 'px';
+				crosshair.style.top = event.clientY + 'px';
+			}
 		});
 		
 		window.addEventListener('mousedown', (event) => {
