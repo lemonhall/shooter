@@ -39,10 +39,21 @@ const WeaponSystem = {
 	},
 	
 	// 射击
-	shoot: function(scene, position) {
+	shoot: function(scene, playerMesh) {
 		const shot = new THREE.Mesh(this.shotGeometry, this.shotMaterial);
-		shot.position.copy(position);
-		shot.position.z -= 100;
+		
+		// 从玩家位置发射
+		shot.position.copy(playerMesh.position);
+		
+		// 计算飞船朝向（前方向量）
+		const forward = new THREE.Vector3(0, 0, -1);
+		forward.applyQuaternion(playerMesh.quaternion);
+		
+		// 子弹初始位置向前偏移（避免打到自己）
+		shot.position.add(forward.clone().multiplyScalar(150));
+		
+		// 子弹速度方向 = 飞船朝向
+		shot.userData.velocity = forward.multiplyScalar(50);
 		
 		this.shots.push(shot);
 		scene.add(shot);
@@ -58,7 +69,9 @@ const WeaponSystem = {
 	update: function(scene, enemies) {
 		for (let i = this.shots.length - 1; i >= 0; i--) {
 			const shot = this.shots[i];
-			shot.position.z -= 50;
+			
+			// 根据速度向量移动子弹
+			shot.position.add(shot.userData.velocity);
 			
 			// 检测与敌人碰撞
 			let hitEnemy = false;

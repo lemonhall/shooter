@@ -14,11 +14,11 @@ const GameState = {
 	shootCooldown: 0,
 	
 	// 飞行物理
-	velocity: 5,          // 当前速度
-	maxVelocity: 15,      // 最大速度
-	minVelocity: 3,       // 最小速度
-	acceleration: 0.2,    // 加速度
-	drag: 0.98,           // 阻尼系数
+	velocity: 8,          // 当前速度（提升基础速度）
+	maxVelocity: 20,      // 最大速度（提升上限）
+	minVelocity: 5,       // 最小速度
+	acceleration: 0.3,    // 加速度（更快响应）
+	drag: 0.99,           // 阻尼系数（减少阻力，更流畅）
 	
 	// 重置游戏状态
 	reset: function() {
@@ -28,7 +28,7 @@ const GameState = {
 		this.isGameOver = false;
 		this.enemySpawnTimer = 0;
 		this.shootCooldown = 0;
-		this.velocity = 5;
+		this.velocity = 8;
 	},
 	
 	// 更新HUD

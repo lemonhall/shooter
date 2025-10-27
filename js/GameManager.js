@@ -60,15 +60,21 @@ const GameManager = {
 		// 更新相机
 		SceneManager.updateCamera(Player.mesh);
 		
-		// 敌人生成
+		// 更新场景动画
+		SceneManager.update();
+		
+		// 敌人生成（降低生成频率）
 		GameState.enemySpawnTimer++;
-		if (GameState.enemySpawnTimer > 60) {
-			EnemyManager.spawn(SceneManager.scene);
+		if (GameState.enemySpawnTimer > 180) { // 3秒生成一个（原来1秒）
+			EnemyManager.spawn(SceneManager.scene, Player.mesh.position);
 			GameState.enemySpawnTimer = 0;
 		}
 		
 		// 更新敌人
 		EnemyManager.update(SceneManager.scene, Player.mesh);
+		
+		// 更新敌人子弹
+		EnemyManager.updateEnemyShots(SceneManager.scene, Player.mesh);
 		
 		// 更新子弹
 		WeaponSystem.update(SceneManager.scene, EnemyManager.enemies);
@@ -83,7 +89,7 @@ const GameManager = {
 		
 		// 处理射击
 		if (InputManager.mouse.isPressed && GameState.shootCooldown === 0) {
-			WeaponSystem.shoot(SceneManager.scene, Player.mesh.position);
+			WeaponSystem.shoot(SceneManager.scene, Player.mesh);
 			GameState.shootCooldown = 10;
 		}
 		

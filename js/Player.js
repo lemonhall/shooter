@@ -24,13 +24,13 @@ const Player = {
 		const mouse = InputManager.mouse;
 		const keys = InputManager.keys;
 		
-		// === 鼠标飞行控制 ===
-		const targetRotationY = -mouse.x * Math.PI / 4;  // 左右
-		const targetRotationX = mouse.y * Math.PI / 6;   // 上下
-		const targetRotationZ = -mouse.x * Math.PI / 6;  // Roll倾斜
+		// === 鼠标飞行控制（增强响应）===
+		const targetRotationY = -mouse.x * Math.PI / 3;  // 左右 ±60°
+		const targetRotationX = mouse.y * Math.PI / 4;   // 上下 ±45°
+		const targetRotationZ = -mouse.x * Math.PI / 4;  // Roll倾斜 ±45°
 		
-		// 平滑插值
-		const lerpFactor = 0.1;
+		// 更快的响应速度
+		const lerpFactor = 0.15; // 从0.1提升到0.15
 		this.mesh.rotation.y += (targetRotationY - this.mesh.rotation.y) * lerpFactor;
 		this.mesh.rotation.x += (targetRotationX - this.mesh.rotation.x) * lerpFactor;
 		this.mesh.rotation.z += (targetRotationZ - this.mesh.rotation.z) * lerpFactor;
