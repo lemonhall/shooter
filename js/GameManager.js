@@ -35,6 +35,42 @@ const GameManager = {
 		this.animate();
 	},
 	
+	// 加载BGM
+	loadBGM: function() {
+		const listener = new THREE.AudioListener();
+		SceneManager.camera.add(listener);
+		
+		this.bgmAudio = new THREE.Audio(listener);
+		const audioLoader = new THREE.AudioLoader();
+		
+		audioLoader.load(
+			'sounds/bgm.mp3',
+			(buffer) => {
+				this.bgmAudio.setBuffer(buffer);
+				this.bgmAudio.setLoop(true);
+				this.bgmAudio.setVolume(0.3); // 音量30%（不要盖过音效）
+				this.bgmAudio.play();
+				console.log('🎵 BGM加载成功，开始播放');
+			},
+			(xhr) => {
+				console.log(`BGM加载中... ${(xhr.loaded / xhr.total * 100).toFixed(1)}%`);
+			},
+			(err) => {
+				console.warn('⚠️ BGM加载失败，游戏继续运行（无音乐）');
+			}
+		);
+	},
+	
+	// 重置BGM
+	restartBGM: function() {
+		if (this.bgmAudio && this.bgmAudio.isPlaying) {
+			this.bgmAudio.stop();
+		}
+		if (this.bgmAudio && this.bgmAudio.buffer) {
+			this.bgmAudio.play();
+		}
+	},
+	
 	// 重置游戏
 	resetGame: function() {
 		// 清理所有对象
@@ -45,6 +81,9 @@ const GameManager = {
 		// 重置状态
 		GameState.reset();
 		Player.reset();
+		
+		// 重启BGM
+		this.restartBGM();
 		
 		// 隐藏游戏结束界面
 		document.getElementById('gameOver').style.display = 'none';
