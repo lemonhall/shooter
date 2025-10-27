@@ -3,6 +3,9 @@
 // ========================================
 
 const GameManager = {
+	// BGM音乐
+	bgmAudio: null,
+	
 	// 初始化游戏
 	init: function() {
 		// 检查THREE是否加载
@@ -21,6 +24,9 @@ const GameManager = {
 		
 		// 初始化武器系统
 		WeaponSystem.init(SceneManager.camera);
+		
+		// 加载BGM
+		this.loadBGM();
 		
 		// 更新HUD
 		GameState.updateHUD();

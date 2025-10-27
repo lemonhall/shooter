@@ -29,13 +29,14 @@ const EnemyManager = {
 			health: 3,
 			maxHealth: 3,
 			
-			// 环绕参数
-			orbitRadius: 600 + Math.random() * 600,  // 环绕半径 600-1200
+			// 环绕参数（调整为更远距离，减少压迫感）
+			orbitRadius: 1200 + Math.random() * 800,  // 环绕半径 1200-2000（原600-1200）
 			orbitSpeed: (Math.random() - 0.5) * 0.03, // 环绕速度（正负控制方向）
 			orbitAngle: Math.atan2(
 				enemy.position.z - playerPosition.z,
 				enemy.position.x - playerPosition.x
-			), // 当前角度
+			), // 当前水平角度
+			orbitPhi: (Math.random() - 0.5) * Math.PI / 2, // 垂直角度 (±90°)
 			
 			// 行为状态
 			state: 'approach',  // approach / orbit / retreat
@@ -90,10 +91,19 @@ const EnemyManager = {
 				// 环绕攻击（Freelancer核心机制）
 				data.orbitAngle += data.orbitSpeed;
 				
-				// 计算环绕位置（水平面环绕）
-				const targetX = playerPos.x + Math.cos(data.orbitAngle) * data.orbitRadius;
-				const targetZ = playerPos.z + Math.sin(data.orbitAngle) * data.orbitRadius;
-				const targetY = playerPos.y + (Math.random() - 0.5) * 100; // 轻微上下浮动
+				// 计算环绕位置（真正的球面环绕，不是平面）
+				// 使用球坐标：水平角 + 垂直角
+				const theta = data.orbitAngle; // 水平角度
+				const phi = data.orbitPhi;    // 垂直角度（保持稳定或缓慢变化）
+				
+				// 缓慢改变垂直角度，增加3D运动感
+				data.orbitPhi += (Math.random() - 0.5) * 0.01;
+				data.orbitPhi = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, data.orbitPhi)); // 限制上下范围
+				
+				// 球坐标转直角坐标
+				const targetX = playerPos.x + data.orbitRadius * Math.cos(phi) * Math.cos(theta);
+				const targetY = playerPos.y + data.orbitRadius * Math.sin(phi); // Y轴（上下）
+				const targetZ = playerPos.z + data.orbitRadius * Math.cos(phi) * Math.sin(theta);
 				
 				// 平滑移动到目标位置
 				enemy.position.x += (targetX - enemy.position.x) * 0.05;
