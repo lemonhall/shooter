@@ -54,21 +54,57 @@ const Player = {
 		const keys = InputManager.keys;
 		
 		// === 鼠标飞行控制（Freelancer风格：鼠标偏离中心=转向速度）===
-		// 鼠标距离中心越远，转向速度越快
+		// 只有当鼠标偏离中心时才转向
 		const turnSpeed = 0.02; // 基础转向速度
+		const deadZone = 0.05; // 死区（避免微小抖动）
 		
 		// 根据鼠标位置产生转向（累加式，无限制）
-		this.mesh.rotation.y -= mouse.x * turnSpeed; // 左右转向
-		this.mesh.rotation.x += mouse.y * turnSpeed * 0.8; // 上下俯仰（稍慢）
+		if (Math.abs(mouse.x) > deadZone) {
+			this.mesh.rotation.y -= mouse.x * turnSpeed; // 左右转向
+		}
+		if (Math.abs(mouse.y) > deadZone) {
+			this.mesh.rotation.x += mouse.y * turnSpeed * 0.8; // 上下俯仰（稍慢）
+		}
 		
-		// Roll倾斜（转弯时的倾斜效果）
+		// Roll倾斜（转弯时的倾斜效果，自动回中）
 		const targetRoll = -mouse.x * Math.PI / 6; // 根据左右转向产生倾斜
 		this.mesh.rotation.z += (targetRoll - this.mesh.rotation.z) * 0.1;
 		
+		// === 自动水平校正（检测异常姿态并自动回正）===
+		// 当鼠标在死区内时，激活自动校正
+		if (Math.abs(mouse.x) < deadZone && Math.abs(mouse.y) < deadZone) {
+			// 获取当前的世界坐标系上方向
+			const currentUp = new THREE.Vector3(0, 1, 0);
+			currentUp.applyQuaternion(this.mesh.quaternion);
+			
+			// 计算当前姿态与标准姿态的偏差
+			const worldUp = new THREE.Vector3(0, 1, 0);
+			const upDot = currentUp.dot(worldUp);
+			
+			// 如果上方向偏差过大（倒飞/侧飞），启动自动校正
+			if (upDot < 0.8) { // 0.8 = cos(36°)，偏转超过36°就校正
+				// Roll轴快速回正
+				this.mesh.rotation.z *= 0.9;
+				
+				// Pitch轴缓慢回正（避免突然抬头/低头）
+				const pitchCorrection = -this.mesh.rotation.x * 0.02;
+				this.mesh.rotation.x += pitchCorrection;
+			}
+		}
+		
 		// === 速度控制 ===
+		// 空格键：专职姿态校正（不加速）
 		if (keys.space) {
+			this.mesh.rotation.z *= 0.85; // Roll快速回正
+			this.mesh.rotation.x *= 0.95; // Pitch缓慢回正
+		}
+		
+		// F键：加速
+		if (keys.f) {
 			GameState.velocity += GameState.acceleration;
 		}
+		
+		// Z键：减速
 		if (keys.z) {
 			GameState.velocity -= GameState.acceleration * 1.5;
 		}

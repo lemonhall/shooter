@@ -12,7 +12,8 @@ const InputManager = {
 	
 	// 键盘状态
 	keys: {
-		space: false,  // 加速
+		space: false,  // 姿态校正
+		f: false,      // 加速
 		z: false       // 减速
 	},
 	
@@ -68,6 +69,9 @@ const InputManager = {
 					this.keys.space = true; 
 					e.preventDefault(); 
 					break;
+				case 'f': case 'F':  // F键加速
+					this.keys.f = true;
+					break;
 				case 'z': case 'Z': 
 					this.keys.z = true; 
 					break;
@@ -82,6 +86,7 @@ const InputManager = {
 		window.addEventListener('keyup', (e) => {
 			switch(e.key) {
 				case ' ': this.keys.space = false; break;
+				case 'f': case 'F': this.keys.f = false; break;  // F键释放
 				case 'z': case 'Z': this.keys.z = false; break;
 			}
 		});
